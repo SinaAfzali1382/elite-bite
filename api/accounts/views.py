@@ -10,8 +10,8 @@ def CreateUser(data, customer: bool):
     phone = data.get('phone')
     if not all([firstName, lastName, phone]):
         return 1
-    existing_user = MyUser.objects.filter(phone=phone)
-    if existing_user.exists() and existing_user.first().isCustomer == customer:
+    existing_user = MyUser.objects.filter(phone=phone, isCustomer=customer)
+    if existing_user.exists():
         return 2
     user = MyUser.objects.create(
         firstName=firstName,
