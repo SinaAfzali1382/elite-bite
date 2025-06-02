@@ -59,4 +59,18 @@ class SignupCodeView(APIView):
 
 class SignupVerifyView:
     def post(self, request):
-        pass
+        data = request.data
+        email = data.get('email')
+        code = data.get('code')
+        if not all([email, code]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold)
+        if codeSent.exists():
+            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold, used=True)
+            return Response({'message': 'ثبت نام شما تائید شد.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'ثبت نام شما تائید نشد.', 'status': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)
