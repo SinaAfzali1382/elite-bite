@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # my aaps
     'rest_framework',
-    'accounts',
+    'customer',
+    'restaurantManager',
     'restaurants',
     'menu',
     'orders',
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'support',
     'analytics',
     'notifications',
+    'userVerification'
 ]
 
 MIDDLEWARE = [
@@ -127,4 +129,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL= 'customer.User'
