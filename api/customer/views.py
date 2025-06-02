@@ -74,3 +74,42 @@ class SignupVerifyView:
         else:
             return Response({'message': 'ثبت نام شما تائید نشد.', 'status': 'error'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginCodeView:
+    def post(self, request):
+        data = request.data
+        email = data.get('email')
+        customer = Customer.objects.get(email=email)
+        if not customer:
+            return Response({'message': 'کاربری با این ایمیل یافت نشد.', 'status': 'notFound'},
+                            status=status.HTTP_404_NOT_FOUND)
+        elif not customer.isVerified:
+            return Response({'message': 'حساب کاربری شما غیرفعال است. لطفا از بخش ثبت نام ایمیل خود را به تائید برسانید.', 'status': 'notVerified'},
+                            status=status.HTTP_403_FORBIDDEN)
+        else:
+            sentEmail = SendSignupCode(email)
+            if not sentEmail:
+                return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'کد یکبار مصرف ورود به ایمیل شما ارسال شد.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+
+
+class LoginVerifyView:
+    def post(self, request):
+        data = request.data
+        email = data.get('email')
+        code = data.get('code')
+        if not all([email, code]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold)
+        if codeSent.exists():
+            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold, used=True)
+            return Response({'message': 'ورود موفقیت آمیز.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'ورود به حساب کاربری با خطا مواجه شد.', 'status': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)

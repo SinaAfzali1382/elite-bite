@@ -15,3 +15,15 @@ def SendSignupCode(email: str):
         return True
     else:
         return False
+
+
+def SendLoginCode(email: str):
+    code = random.randint(10000, 99999)
+    html = authHtml("کد یکبار مصرف ورود شما به elite bite", code)
+    status = sendEmail(email, "کد یکبار مصرف ورود به elite bite", html)
+    if status:
+        code = VerificationCode.objects.create(email=email, code=code, forLogin=False)
+        code.save()
+        return True
+    else:
+        return False
