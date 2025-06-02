@@ -1,0 +1,47 @@
+{
+  "api": "/api/customer/signup/code",
+  "method": "post",
+  "input": {
+    "firstName": "string",
+    "lastName": "string",
+    "email": "string (email)"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "کد تائید ثبت نام برای ایمیل شما ارسال شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "success",
+      "message": "کد تائید ثبت نام در کمتر از 2 دقیقه اخیر به ایمیل شما ارسال شده است و هنوز معتبر است.",
+      "statusCode": 200
+    },
+    {
+      "status": "success",
+      "message": "این ایمیل یک حساب کاربری غیرفعال دارد. کد تایید به ایمیل شما ارسال شد. در صورت تایید، حساب کاربری شما با اطلاعاتی که الان وارد کرده‌اید تایید می‌شود.",
+      "statusCode": 200
+    },
+    {
+      "status": "required",
+      "message": "اطلاعات ورودی ناقص است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "مشکلی در ارسال کد بوجود آمده است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "خطا در ذخیره اطلاعات، لطفا مجدد تلاش کنید یا با پشتیبانی تماس بگیرید.",
+      "statusCode": 400
+    },
+    {
+      "status": "exist",
+      "message": "این ایمیل یک حساب کاربری فعال دارد.",
+      "statusCode": 409
+    }
+  ]
+}
+
