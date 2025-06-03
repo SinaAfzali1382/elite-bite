@@ -1,12 +1,34 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 
+interface Locations {
+  [key: string]: string[];
+}
+
 const Header: React.FC = () => {
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedArea, setSelectedArea] = useState("");
+
+  // Sample city and area data
+  const locations: Locations = {
+    تهران: ["شمیرانات", "تجریش", "نیاوران", "پاسداران", "ونک"],
+    شیراز: ["معالی آباد", "قدوسی", "ستارخان", "زرهی"],
+    اصفهان: ["چهارباغ", "جلفا", "سی و سه پل", "مرداویج"],
+    مشهد: ["احمدآباد", "وکیل آباد", "هفت تیر", "سجاد"],
+  };
+
+  const handleLocationSelect = (city: string, area: string) => {
+    setSelectedCity(city);
+    setSelectedArea(area);
+    setIsLocationModalOpen(false);
+  };
+
   return (
-    <div className="header-container font-vazir">
-      <style>
-        {`
+      <div className="header-container font-vazir">
+        <style>
+          {`
           @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap');
           .font-vazir {
             font-family: 'Vazirmatn', sans-serif;
@@ -41,7 +63,7 @@ const Header: React.FC = () => {
             font-size: 28px;
             font-weight: 700;
             white-space: nowrap;
-            color: #1F2937;
+            color: #f99245;
           }
           .logo span {
             color: #00CECB;
@@ -85,7 +107,7 @@ const Header: React.FC = () => {
           .search-container input:focus + .search-icon {
             fill: #00CECB;
           }
-          .location-button {
+          .location-button, .cart-button {
             display: flex;
             align-items: center;
             background: linear-gradient(135deg, #00CECB 0%, #06B6D4 100%);
@@ -98,17 +120,108 @@ const Header: React.FC = () => {
             transition: all 0.3s ease;
             white-space: nowrap;
             box-shadow: 0 2px 8px rgba(0, 206, 203, 0.2);
+            margin-right: 12px;
           }
-          .location-button:hover {
+          .location-button:hover, .cart-button:hover {
             background: linear-gradient(135deg, #06B6D4 0%, #00A4A3 100%);
             box-shadow: 0 4px 12px rgba(0, 206, 203, 0.3);
             transform: translateY(-1px);
           }
-          .location-button svg {
+          .location-button svg, .cart-button img {
             width: 20px;
             height: 20px;
             margin-left: 8px;
-            fill: #FFFFFF;
+          }
+          .buttons-container {
+            display: flex;
+            align-items: center;
+          }
+          .location-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+          }
+          .location-modal-content {
+            background: #FFFFFF;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            margin: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.5s ease-out forwards;
+            position: relative;
+            direction: rtl;
+          }
+          @keyframes slideDown {
+            from {
+              transform: translateY(-100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          .location-modal-content h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333333;
+            margin-bottom: 16px;
+          }
+          .location-modal-content select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            background: #F8FAFC;
+            color: #1F2937;
+            outline: none;
+            text-align: right;
+          }
+          .location-modal-content select:focus {
+            border-color: #00CECB;
+            box-shadow: 0 0 0 3px rgba(0, 206, 203, 0.1);
+          }
+          .location-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+          }
+          .location-modal-buttons button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
+          .location-modal-buttons .confirm-button {
+            background: linear-gradient(135deg, #00CECB 0%, #06B6D4 100%);
+            color: #FFFFFF;
+            border: none;
+          }
+          .location-modal-buttons .confirm-button:hover {
+            background: linear-gradient(135deg, #06B6D4 0%, #00A4A3 100%);
+            box-shadow: 0 4px 12px rgba(0, 206, 203, 0.3);
+          }
+          .location-modal-buttons .cancel-button {
+            background: #F8FAFC;
+            color: #333333;
+            border: 1px solid #E5E7EB;
+          }
+          .location-modal-buttons .cancel-button:hover {
+            background: #E5E7EB;
           }
           .hero-section {
             position: relative;
@@ -139,14 +252,14 @@ const Header: React.FC = () => {
           .hero-image {
             position: absolute;
             transition: all 0.3s ease;
-            background: #FFFFFF; /* Added white background */
-            padding: 10px; /* Added padding to show white background */
-            border-radius: 24px; /* Adjusted to account for padding */
+            background: #FFFFFF;
+            padding: 10px;
+            border-radius: 24px;
           }
           .hero-image img {
             width: 100%;
             height: 100%;
-            border-radius: 16px; /* Adjusted to fit within padding */
+            border-radius: 16px;
             object-fit: cover;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             border: 2px solid #FFFFFF;
@@ -165,8 +278,8 @@ const Header: React.FC = () => {
           .hero-image:nth-child(2) {
             width: 200px;
             height: 200px;
-            top: 160px; /* Increased from 130px to add more vertical space */
-            left: 180px; /* Increased from 160px to add more horizontal space */
+            top: 160px;
+            left: 180px;
             transform: rotate(5deg);
           }
           .hero-image:nth-child(2):hover {
@@ -176,8 +289,8 @@ const Header: React.FC = () => {
           .hero-image:nth-child(3) {
             width: 160px;
             height: 160px;
-            top: 20px; /* Decreased from 40px to balance spacing */
-            left: 260px; /* Increased from 220px to add more horizontal space */
+            top: 20px;
+            left: 260px;
             transform: rotate(15deg);
           }
           .hero-image:nth-child(3):hover {
@@ -301,14 +414,14 @@ const Header: React.FC = () => {
             .hero-image:nth-child(2) {
               width: 175px;
               height: 175px;
-              top: 140px; /* Adjusted from 110px */
-              left: 160px; /* Adjusted from 140px */
+              top: 140px;
+              left: 160px;
             }
             .hero-image:nth-child(3) {
               width: 140px;
               height: 140px;
-              top: 15px; /* Adjusted from 35px */
-              left: 230px; /* Adjusted from 190px */
+              top: 15px;
+              left: 230px;
             }
             .hero-text {
               padding: 25px;
@@ -319,6 +432,9 @@ const Header: React.FC = () => {
             }
             .hero-text p {
               font-size: 15px;
+            }
+            .location-modal-content {
+              max-width: 450px;
             }
           }
 
@@ -336,11 +452,11 @@ const Header: React.FC = () => {
               height: 44px;
               font-size: 15px;
             }
-            .location-button {
+            .location-button, .cart-button {
               padding: 8px 16px;
               font-size: 14px;
             }
-            .location-button svg {
+            .location-button svg, .cart-button img {
               width: 18px;
               height: 18px;
             }
@@ -368,14 +484,14 @@ const Header: React.FC = () => {
             .hero-image:nth-child(2) {
               width: 150px;
               height: 150px;
-              top: 120px; /* Adjusted from 90px */
-              left: 140px; /* Adjusted from 120px */
+              top: 120px;
+              left: 140px;
             }
             .hero-image:nth-child(3) {
               width: 120px;
               height: 120px;
-              top: 10px; /* Adjusted from 30px */
-              left: 200px; /* Adjusted from 160px */
+              top: 10px;
+              left: 200px;
             }
             .hero-text {
               padding: 20px;
@@ -395,6 +511,20 @@ const Header: React.FC = () => {
             .hero-text {
               width: 35px;
               height: 35px;
+            }
+            .location-modal-content {
+              max-width: 400px;
+              padding: 20px;
+            }
+            .location-modal-content h2 {
+              font-size: 22px;
+            }
+            .location-modal-content select {
+              font-size: 15px;
+            }
+            .location-modal-buttons button {
+              padding: 8px 16px;
+              font-size: 14px;
             }
           }
 
@@ -421,18 +551,22 @@ const Header: React.FC = () => {
               height: 40px;
               font-size: 14px;
             }
-            .location-button {
+            .location-button, .cart-button {
               padding: 8px 14px;
               font-size: 14px;
               justify-content: center;
             }
-            .location-button svg {
+            .location-button svg, .cart-button img {
               width: 16px;
               height: 16px;
             }
             .search-container .search-icon {
               width: 20px;
               height: 20px;
+            }
+            .buttons-container {
+              justify-content: center;
+              gap: 10px;
             }
             .hero-section {
               flex-direction: column;
@@ -492,6 +626,20 @@ const Header: React.FC = () => {
               width: 30px;
               height: 30px;
             }
+            .location-modal-content {
+              max-width: 90%;
+              padding: 16px;
+            }
+            .location-modal-content h2 {
+              font-size: 20px;
+            }
+            .location-modal-content select {
+              font-size: 14px;
+            }
+            .location-modal-buttons button {
+              padding: 8px 14px;
+              font-size: 14px;
+            }
           }
 
           @media (max-width: 480px) {
@@ -508,11 +656,11 @@ const Header: React.FC = () => {
               height: 36px;
               font-size: 13px;
             }
-            .location-button {
+            .location-button, .cart-button {
               padding: 6px 12px;
               font-size: 12px;
             }
-            .location-button svg {
+            .location-button svg, .cart-button img {
               width: 14px;
               height: 14px;
             }
@@ -540,14 +688,14 @@ const Header: React.FC = () => {
             .hero-image:nth-child(2) {
               width: 125px;
               height: 125px;
-              top: 100px; /* Adjusted from 75px */
-              left: 120px; /* Adjusted from 100px */
+              top: 100px;
+              left: 120px;
             }
             .hero-image:nth-child(3) {
               width: 100px;
               height: 100px;
-              top: 5px; /* Adjusted from 25px */
-              left: 160px; /* Adjusted from 130px */
+              top: 5px;
+              left: 160px;
             }
             .hero-text {
               padding: 15px;
@@ -567,6 +715,20 @@ const Header: React.FC = () => {
               width: 25px;
               height: 25px;
             }
+            .location-modal-content {
+              max-width: 95%;
+              padding: 12px;
+            }
+            .location-modal-content h2 {
+              font-size: 18px;
+            }
+            .location-modal-content select {
+              font-size: 13px;
+            }
+            .location-modal-buttons button {
+              padding: 6px 12px;
+              font-size: 12px;
+            }
           }
 
           @media (max-width: 360px) {
@@ -585,11 +747,11 @@ const Header: React.FC = () => {
               width: 16px;
               height: 16px;
             }
-            .location-button {
+            .location-button, .cart-button {
               padding: 5px 10px;
               font-size: 11px;
             }
-            .location-button svg {
+            .location-button svg, .cart-button img {
               width: 12px;
               height: 12px;
             }
@@ -613,14 +775,14 @@ const Header: React.FC = () => {
             .hero-image:nth-child(2) {
               width: 100px;
               height: 100px;
-              top: 80px; /* Adjusted from 60px */
-              left: 100px; /* Adjusted from 80px */
+              top: 80px;
+              left: 100px;
             }
             .hero-image:nth-child(3) {
               width: 80px;
               height: 80px;
-              top: 0px; /* Adjusted from 20px */
-              left: 130px; /* Adjusted from 100px */
+              top: 0px;
+              left: 130px;
             }
             .hero-text {
               padding: 12px;
@@ -640,71 +802,153 @@ const Header: React.FC = () => {
               width: 20px;
               height: 20px;
             }
+            .location-modal-content {
+              max-width: 98%;
+              padding: 10px;
+            }
+            .location-modal-content h2 {
+              font-size: 16px;
+            }
+            .location-modal-content select {
+              font-size: 12px;
+            }
+            .location-modal-buttons button {
+              padding: 5px 10px;
+              font-size: 11px;
+            }
           }
         `}
-      </style>
-      <header className="header">
-        <div className="header-content">
-          <Link href="/login" className="location-button">
-            ورود/ثبت‌نام
-          </Link>
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="...رستوران‌ها، کافه‌ها، غذاها"
-              defaultValue="...سفارش آنلاین غذا"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="search-icon"
-            >
-              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-            </svg>
-          </div>
-          <div className="logo">
-            <span>elite</span>bite
-          </div>
-        </div>
-      </header>
-      <div className="hero-section">
-        <div className="hero-content">
-          <div className="hero-images">
-            <div className="hero-image">
-              <img
-                src="pizza.png"
-                alt="Plate of food with burger, fries, egg, and pickles"
-              />
-            </div>
-            <div className="hero-image">
-              <img
-                src="burger.png"
-                alt="Burger with fries"
-              />
-            </div>
-            <div className="hero-image">
-              <img
-                src="drink.png"
-                alt="Pizza slice"
-              />
-            </div>
-          </div>
-          <div className="hero-text">
-            
-            <h1>یکبار بگیر مشتری شو</h1>
-            <p>سفارش آنلاین غذای مورد علاقه‌تان را با سریع‌ترین زمان تجربه کنید، با بهترین کیفیت و تنوع در منو.</p>
-            <div className="cta-container">
-              <Link href="/restaurants" className="cta-button primary">
-                سفارش آنلاین
+        </style>
+        <header className="header">
+          <div className="header-content">
+            <div className="buttons-container">
+              <Link href="/login" className="location-button">
+                ورود/ثبت‌نام
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </Link>
-              <Link href="/location" className="cta-button secondary">
-                موقعیت ما
+              <Link href="/cart" className="cart-button">
+                سبد خرید
+                <img src="cart.png" alt="Cart" />
               </Link>
+              <button
+                  className="cart-button"
+                  onClick={() => setIsLocationModalOpen(true)}
+              >
+                مکان
+                <img src="location.png" alt="Location" />
+              </button>
+            </div>
+            <div className="search-container">
+              <input
+                  type="text"
+                  placeholder="...رستوران‌ها، کافه‌ها، غذاها"
+                  defaultValue="...سفارش آنلاین غذا"
+              />
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="search-icon"
+              >
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+              </svg>
+            </div>
+            <div className="logo">
+              <span>elite</span>bite
+            </div>
+          </div>
+        </header>
+        {isLocationModalOpen && (
+            <div className="location-modal">
+              <div className="location-modal-content">
+                <h2>انتخاب مکان</h2>
+                <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                >
+                  <option value="">انتخاب شهر</option>
+                  {Object.keys(locations).map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                  ))}
+                </select>
+                {selectedCity && (
+                    <select
+                        value={selectedArea}
+                        onChange={(e) => setSelectedArea(e.target.value)}
+                    >
+                      <option value="">انتخاب منطقه</option>
+                      {locations[selectedCity].map((area) => (
+                          <option key={area} value={area}>
+                            {area}
+                          </option>
+                      ))}
+                    </select>
+                )}
+                <div className="location-modal-buttons">
+                  <button
+                      className="confirm-button"
+                      onClick={() =>
+                          selectedCity &&
+                          selectedArea &&
+                          handleLocationSelect(selectedCity, selectedArea)
+                      }
+                      disabled={!selectedCity || !selectedArea}
+                  >
+                    تأیید
+                  </button>
+                  <button
+                      className="cancel-button"
+                      onClick={() => setIsLocationModalOpen(false)}
+                  >
+                    لغو
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
+        <div className="hero-section">
+          <div className="hero-content">
+            <div className="hero-images">
+              <div className="hero-image">
+                <img
+                    src="pizza.png"
+                    alt="Plate of food with burger, fries, egg, and pickles"
+                />
+              </div>
+              <div className="hero-image">
+                <img
+                    src="burger.png"
+                    alt="Burger with fries"
+                />
+              </div>
+              <div className="hero-image">
+                <img
+                    src="drink.png"
+                    alt="Pizza slice"
+                />
+              </div>
+            </div>
+            <div className="hero-text">
+              <h1>یکبار بگیر مشتری شو</h1>
+              <p>سفارش آنلاین غذای مورد علاقه‌تان را با سریع‌ترین زمان تجربه کنید، با بهترین کیفیت و تنوع در منو.</p>
+              <div className="cta-container">
+                <Link href="/restaurants" className="cta-button primary">
+                  سفارش آنلاین
+                </Link>
+                <Link href="/location" className="cta-button secondary">
+                  موقعیت ما
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
