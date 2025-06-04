@@ -1,7 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 class API {
-    static async post(endpoint: string, data: any) {
+    static async post<T extends Record<string, unknown>>(endpoint: string, data: T) {
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             method: 'POST',
             headers: {
@@ -12,6 +12,7 @@ class API {
         });
         return response.json();
     }
+
 
     static customerSignupCode(data: {
         firstName: string;

@@ -52,7 +52,7 @@ const OneTimeCodeInput: React.FC = () => {
             } else {
                 setErrorMessage(res.message);
             }
-        } catch (e) {
+        } catch {
             setErrorMessage('خطایی در تأیید ثبت‌نام رخ داده است.');
         }
     };

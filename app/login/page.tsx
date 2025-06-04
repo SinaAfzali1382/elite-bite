@@ -32,7 +32,7 @@ const Login: React.FC = () => {
             } else {
                 setErrorMessage(res.message);
             }
-        } catch (e) {
+        } catch {
             setErrorMessage('خطا در ارتباط با سرور');
         }
     };
