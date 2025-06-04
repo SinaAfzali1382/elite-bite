@@ -1,0 +1,25 @@
+{
+  "api": "/api/customer/login/verify",
+  "method": "post",
+  "input": {
+    "email": "string (email)",
+    "code": "string"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "ورود موفقیت آمیز.",
+      "statusCode": 200
+    },
+    {
+      "status": "required",
+      "message": "اطلاعات ورودی ناقص است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "ورود به حساب کاربری با خطا مواجه شد.",
+      "statusCode": 400
+    }
+  ]
+}
