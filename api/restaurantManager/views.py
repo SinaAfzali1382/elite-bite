@@ -1,3 +1,126 @@
-from django.shortcuts import render
+from datetime import timedelta
+from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from .models import RestaurantManager
+from userVerification.models import VerificationCode
+from customer.utilities import SendSignupCode
 
-# Create your views here.
+
+class SignupCodeView(APIView):
+    def post(self, request):
+        data = request.data
+        firstName = data.get('firstName')
+        lastName = data.get('lastName')
+        email = data.get('email')
+        existing_user = RestaurantManager.objects.filter(email=email, isVerified=True)
+        notVerifiedUser = RestaurantManager.objects.filter(email=email, isVerified=False)
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold, role="RestaurantManager")
+        if not all([firstName, lastName, email]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif notVerifiedUser.exists() and codeSent.exists():
+            return Response(
+                {'message': 'کد تائید ثبت نام در کمتر از 2 دقیقه اخیر به ایمیل شما ارسال شده است و هنوز معتبر است.',
+                 'status': 'success'},
+                status=status.HTTP_200_OK)
+        elif notVerifiedUser.exists():
+            sentEmail = SendSignupCode(email, "RestaurantManager")
+            if not sentEmail:
+                return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.','status': 'error'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            RestaurantManager.objects.update_or_create(email=email, firstName=firstName, lastName=lastName)
+            return Response({'message': 'این ایمیل یک حساب کاربری غیرفعال دارد. کد تایید به ایمیل شما ارسال شد. در صورت تایید، حساب کاربری شما با اطلاعاتی که الان وارد کرده اید تایید می شود.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+        elif existing_user.exists():
+            return Response({'message': 'این ایمیل یک حساب کاربری فعال دارد.', 'status': 'exist'},
+                            status=status.HTTP_409_CONFLICT)
+        else:
+            restaurantManager = RestaurantManager.objects.create(
+                firstName=firstName,
+                lastName=lastName,
+                email=email,
+                isVerified=False,
+            )
+            restaurantManagerSave = restaurantManager.save()
+            if not restaurantManagerSave:
+                return Response({'message': 'خطا در ذخیره اطلاعات، لطفا مجدد تلاش کنید یا با پشتیبانی تماس بگیرید.', 'status': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)
+            sentEmail = SendSignupCode(email, "RestaurantManager")
+            if not sentEmail:
+                return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'کد تائید ثبت نام برای ایمیل شما ارسال شد.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+
+
+
+class SignupVerifyView(APIView):
+    def post(self, request):
+        data = request.data
+        email = data.get('email')
+        code = data.get('code')
+        if not all([email, code]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold, role="RestaurantManager")
+        if codeSent.exists():
+            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold, used=True, role="RestaurantManager")
+            RestaurantManager.objects.update_or_create(email=email, isVerified=True)
+            return Response({'message': 'ثبت نام شما تائید شد.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'ثبت نام شما تائید نشد.', 'status': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginCodeView(APIView):
+    def post(self, request):
+        data = request.data
+        email = data.get('email')
+        restaurantManager = RestaurantManager.objects.get(email=email)
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold, role="RestaurantManager")
+        if not all([email]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif not restaurantManager:
+            return Response({'message': 'کاربری با این ایمیل یافت نشد.', 'status': 'notFound'},
+                            status=status.HTTP_404_NOT_FOUND)
+        elif codeSent.exists():
+            return Response(
+                {'message': 'کد یکبار مصرف ورود به حساب کاربری در  کمتر از 2 دقیقه اخیر به ایمیل شما ارسال شده است و هنوز معتبر است.',
+                 'status': 'success'},
+                status=status.HTTP_200_OK)
+        elif not restaurantManager.isVerified:
+            return Response({'message': 'حساب کاربری شما غیرفعال است. لطفا از بخش ثبت نام ایمیل خود را به تائید برسانید.', 'status': 'notVerified'},
+                            status=status.HTTP_403_FORBIDDEN)
+        else:
+            sentEmail = SendSignupCode(email, "RestaurantManager")
+            if not sentEmail:
+                return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'کد یکبار مصرف ورود به ایمیل شما ارسال شد.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+
+
+class LoginVerifyView(APIView):
+    def post(self, request):
+        data = request.data
+        email = data.get('email')
+        code = data.get('code')
+        if not all([email, code]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold, role="RestaurantManager")
+        if codeSent.exists():
+            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold, role="RestaurantManager", used=True)
+            return Response({'message': 'ورود موفقیت آمیز.', 'status': 'success'},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'ورود به حساب کاربری با خطا مواجه شد.', 'status': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)

@@ -17,7 +17,7 @@ class SignupCodeView(APIView):
         existing_user = Customer.objects.filter(email=email, isVerified=True)
         notVerifiedUser = Customer.objects.filter(email=email, isVerified=False)
         time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold)
+        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold, role="customer")
         if not all([firstName, lastName, email]):
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -27,7 +27,7 @@ class SignupCodeView(APIView):
                  'status': 'success'},
                 status=status.HTTP_200_OK)
         elif notVerifiedUser.exists():
-            sentEmail = SendSignupCode(email)
+            sentEmail = SendSignupCode(email, "customer")
             if not sentEmail:
                 return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.','status': 'error'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -48,7 +48,7 @@ class SignupCodeView(APIView):
             if not customerSave:
                 return Response({'message': 'خطا در ذخیره اطلاعات، لطفا مجدد تلاش کنید یا با پشتیبانی تماس بگیرید.', 'status': 'error'},
                             status=status.HTTP_400_BAD_REQUEST)
-            sentEmail = SendSignupCode(email)
+            sentEmail = SendSignupCode(email, "customer")
             if not sentEmail:
                 return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -57,7 +57,7 @@ class SignupCodeView(APIView):
 
 
 
-class SignupVerifyView:
+class SignupVerifyView(APIView):
     def post(self, request):
         data = request.data
         email = data.get('email')
@@ -66,9 +66,12 @@ class SignupVerifyView:
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
         time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold)
+        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold, role="customer")
         if codeSent.exists():
-            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold, used=True)
+            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold,role="customer", used=True)
+            mCustomer = Customer.objects.get(email=email)
+            mCustomer.isVerified = True
+            mCustomer.save()
             return Response({'message': 'ثبت نام شما تائید شد.', 'status': 'success'},
                             status=status.HTTP_200_OK)
         else:
@@ -76,19 +79,29 @@ class SignupVerifyView:
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginCodeView:
+class LoginCodeView(APIView):
     def post(self, request):
         data = request.data
         email = data.get('email')
         customer = Customer.objects.get(email=email)
-        if not customer:
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold, role="customer")
+        if not all([email]):
+            return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif not customer:
             return Response({'message': 'کاربری با این ایمیل یافت نشد.', 'status': 'notFound'},
                             status=status.HTTP_404_NOT_FOUND)
+        elif codeSent.exists():
+            return Response(
+                {'message': 'کد یکبار مصرف ورود به حساب کاربری در کمتر از 2 دقیقه اخیر به ایمیل شما ارسال شده است و هنوز معتبر است.',
+                 'status': 'success'},
+                status=status.HTTP_200_OK)
         elif not customer.isVerified:
             return Response({'message': 'حساب کاربری شما غیرفعال است. لطفا از بخش ثبت نام ایمیل خود را به تائید برسانید.', 'status': 'notVerified'},
                             status=status.HTTP_403_FORBIDDEN)
         else:
-            sentEmail = SendSignupCode(email)
+            sentEmail = SendSignupCode(email, "customer")
             if not sentEmail:
                 return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -96,7 +109,7 @@ class LoginCodeView:
                             status=status.HTTP_200_OK)
 
 
-class LoginVerifyView:
+class LoginVerifyView(APIView):
     def post(self, request):
         data = request.data
         email = data.get('email')
@@ -105,9 +118,9 @@ class LoginVerifyView:
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
         time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold)
+        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold, role="customer")
         if codeSent.exists():
-            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold, used=True)
+            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold,role="customer", used=True)
             return Response({'message': 'ورود موفقیت آمیز.', 'status': 'success'},
                             status=status.HTTP_200_OK)
         else:

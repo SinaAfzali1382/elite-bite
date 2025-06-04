@@ -6,3 +6,4 @@ class VerificationCode(models.Model):
     sendDate = models.DateTimeField(auto_now_add=True)
     forLogin = models.BooleanField(default=False)
     used = models.BooleanField(default=False)
+    role = models.CharField(max_length=100, default='customer')
