@@ -26,7 +26,7 @@ const OneTimeCodeInput: React.FC = () => {
             if (res.status === 'success') {
                 router.push('/dashboard');
             } else {
-                setErrorMessage(res.message);
+                setErrorMessage(res.message || 'خطای نامشخص');
             }
         } catch {
             setErrorMessage('خطایی در تأیید ثبت‌نام رخ داده است.');
