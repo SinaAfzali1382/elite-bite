@@ -12,9 +12,9 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    background: #00CECB; /* Teal background from previous code */
-    color: white; /* White text to match previous code */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    background: #00CECB;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .logo {
@@ -27,13 +27,13 @@
     font-size: 20px;
     padding: 20px 0;
     margin: 0;
-    font-weight: 700; /* Matches bold style from previous code */
+    font-weight: 700;
 }
 
 .container p {
     font-size: 12px;
     margin: 0;
-    opacity: 0.9; /* Slightly less opaque for contrast, inspired by previous code */
+    opacity: 0.9;
 }
 
 .input {
@@ -41,11 +41,11 @@
     outline: none;
     padding: 15px;
     border-radius: 10px;
-    border: 2px solid white; /* White border from previous code */
-    background-color: transparent; /* Transparent input background like previous code */
+    border: 2px solid white;
+    background-color: transparent;
     margin: 20px 0;
     box-sizing: border-box;
-    color: white; /* White text for input */
+    color: white;
     font-family: 'Vazirmatn', sans-serif;
     font-size: 16px;
 }
@@ -61,21 +61,21 @@
     outline: none;
     padding: 15px;
     border-radius: 10px;
-    border: 2px solid white; /* White border from previous code */
-    background: white; /* White button background */
-    color: #00CECB; /* Teal text */
+    border: 2px solid white;
+    background: white;
+    color: #00CECB;
     cursor: pointer;
     font-family: 'Vazirmatn', sans-serif;
     font-weight: 500;
     box-sizing: border-box;
-    transition: all 0.3s ease; /* Smooth transition from previous code */
+    transition: all 0.3s ease;
 }
 
 .button:hover {
-    background: #00CECB; /* Teal background on hover */
-    color: white; /* White text on hover */
-    border-color: #00CECB; /* Teal border on hover */
-    box-shadow: 0 2px 8px rgba(0, 206, 203, 0.3); /* Shadow from previous code */
+    background: #00CECB;
+    color: white;
+    border-color: #00CECB;
+    box-shadow: 0 2px 8px rgba(0, 206, 203, 0.3);
 }
 
 .des {
@@ -88,16 +88,16 @@
 .link {
     text-decoration: none;
     cursor: pointer;
-    color: white; /* White links to match theme */
+    color: white;
     font-weight: 500;
 }
 
 .link:hover {
-    text-decoration: underline; /* Subtle hover effect */
+    text-decoration: underline;
 }
 
 .error {
     font-size: 12px;
-    color: white; /* White error text to match theme */
+    color: white;
     margin: 0;
 }
