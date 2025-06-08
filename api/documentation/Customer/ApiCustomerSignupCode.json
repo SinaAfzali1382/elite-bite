@@ -1,0 +1,41 @@
+{
+  "api": "/api/customer/signup/code",
+  "method": "post",
+  "input": {
+    "firstName": "string",
+    "lastName": "string",
+    "email": "string (email)"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "کد ثبت‌نام ارسال شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "success",
+      "message": "کد قبلاً ارسال شده و معتبر است.",
+      "statusCode": 200
+    },
+    {
+      "status": "success",
+      "message": "کد جدید ارسال شد. اطلاعات شما به‌روز شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "required",
+      "message": "اطلاعات ورودی ناقص است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "ارسال کد با خطا مواجه شد.",
+      "statusCode": 500
+    },
+    {
+      "status": "exist",
+      "message": "این ایمیل یک حساب کاربری فعال دارد.",
+      "statusCode": 409
+    }
+  ]
+}

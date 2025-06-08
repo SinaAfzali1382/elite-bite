@@ -14,47 +14,48 @@ class SignupCodeView(APIView):
         firstName = data.get('firstName')
         lastName = data.get('lastName')
         email = data.get('email')
-        existing_user = Customer.objects.filter(email=email, isVerified=True)
-        notVerifiedUser = Customer.objects.filter(email=email, isVerified=False)
-        time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold, role="customer")
+
         if not all([firstName, lastName, email]):
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
-        elif notVerifiedUser.exists() and codeSent.exists():
-            return Response(
-                {'message': 'کد تائید ثبت نام در کمتر از 2 دقیقه اخیر به ایمیل شما ارسال شده است و هنوز معتبر است.',
-                 'status': 'success'},
-                status=status.HTTP_200_OK)
-        elif notVerifiedUser.exists():
-            sentEmail = SendSignupCode(email, "customer")
-            if not sentEmail:
-                return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.','status': 'error'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            Customer.objects.update_or_create(email=email, firstName=firstName, lastName=lastName)
-            return Response({'message': 'این ایمیل یک حساب کاربری غیرفعال دارد. کد تایید به ایمیل شما ارسال شد. در صورت تایید، حساب کاربری شما با اطلاعاتی که الان وارد کرده اید تایید می شود.', 'status': 'success'},
-                            status=status.HTTP_200_OK)
-        elif existing_user.exists():
+
+        existing_user = Customer.objects.filter(email=email, isVerified=True)
+        not_verified_user = Customer.objects.filter(email=email, isVerified=False)
+
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        recent_code = VerificationCode.objects.filter(
+            email=email, used=False, sendDate__gte=time_threshold, role="customer"
+        )
+
+        if existing_user.exists():
             return Response({'message': 'این ایمیل یک حساب کاربری فعال دارد.', 'status': 'exist'},
                             status=status.HTTP_409_CONFLICT)
-        else:
-            customer = Customer.objects.create(
-                firstName=firstName,
-                lastName=lastName,
-                email=email,
-                isVerified=False,
-            )
-            customerSave = customer.save()
-            if not customerSave:
-                return Response({'message': 'خطا در ذخیره اطلاعات، لطفا مجدد تلاش کنید یا با پشتیبانی تماس بگیرید.', 'status': 'error'},
-                            status=status.HTTP_400_BAD_REQUEST)
-            sentEmail = SendSignupCode(email, "customer")
-            if not sentEmail:
+
+        if not_verified_user.exists():
+            if recent_code.exists():
+                return Response({'message': 'کد تائید ثبت نام اخیراً ارسال شده و هنوز معتبر است.', 'status': 'success'},
+                                status=status.HTTP_200_OK)
+            sent = SendSignupCode(email, "customer")
+            if not sent:
                 return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            return Response({'message': 'کد تائید ثبت نام برای ایمیل شما ارسال شد.', 'status': 'success'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            Customer.objects.filter(email=email).update(firstName=firstName, lastName=lastName)
+            return Response({'message': 'کد تایید دوباره ارسال شد. در صورت تایید، حساب شما فعال خواهد شد.', 'status': 'success'},
                             status=status.HTTP_200_OK)
 
+        customer = Customer.objects.create(
+            firstName=firstName,
+            lastName=lastName,
+            email=email,
+            isVerified=False,
+        )
+        sent = SendSignupCode(email, "customer")
+        if not sent:
+            customer.delete()
+            return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'message': 'کد تائید ثبت نام برای ایمیل شما ارسال شد.', 'status': 'success'},
+                        status=status.HTTP_200_OK)
 
 
 class SignupVerifyView(APIView):
@@ -62,51 +63,70 @@ class SignupVerifyView(APIView):
         data = request.data
         email = data.get('email')
         code = data.get('code')
+
         if not all([email, code]):
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
+
         time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold, role="customer")
-        if codeSent.exists():
-            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold,role="customer", used=True)
-            mCustomer = Customer.objects.get(email=email)
-            mCustomer.isVerified = True
-            mCustomer.save()
-            return Response({'message': 'ثبت نام شما تائید شد.', 'status': 'success'},
-                            status=status.HTTP_200_OK)
-        else:
-            return Response({'message': 'ثبت نام شما تائید نشد.', 'status': 'error'},
+        code_obj = VerificationCode.objects.filter(
+            email=email, code=code, used=False, sendDate__gte=time_threshold, role="customer"
+        ).first()
+
+        if not code_obj:
+            return Response({'message': 'کد تایید نامعتبر یا منقضی شده است.', 'status': 'error'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        code_obj.used = True
+        code_obj.save()
+
+        try:
+            customer = Customer.objects.get(email=email)
+            customer.isVerified = True
+            customer.save()
+        except Customer.DoesNotExist:
+            return Response({'message': 'کاربر یافت نشد.', 'status': 'error'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'message': 'ثبت‌نام شما با موفقیت تایید شد.', 'status': 'success'},
+                        status=status.HTTP_200_OK)
 
 
 class LoginCodeView(APIView):
     def post(self, request):
         data = request.data
         email = data.get('email')
-        customer = Customer.objects.get(email=email)
-        time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, used=False, sendDate__gte=time_threshold, role="customer")
-        if not all([email]):
+
+        if not email:
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
-        elif not customer:
+
+        try:
+            customer = Customer.objects.get(email=email)
+        except Customer.DoesNotExist:
             return Response({'message': 'کاربری با این ایمیل یافت نشد.', 'status': 'notFound'},
                             status=status.HTTP_404_NOT_FOUND)
-        elif codeSent.exists():
-            return Response(
-                {'message': 'کد یکبار مصرف ورود به حساب کاربری در کمتر از 2 دقیقه اخیر به ایمیل شما ارسال شده است و هنوز معتبر است.',
-                 'status': 'success'},
-                status=status.HTTP_200_OK)
-        elif not customer.isVerified:
-            return Response({'message': 'حساب کاربری شما غیرفعال است. لطفا از بخش ثبت نام ایمیل خود را به تائید برسانید.', 'status': 'notVerified'},
+
+        if not customer.isVerified:
+            return Response({'message': 'حساب کاربری شما غیرفعال است.', 'status': 'notVerified'},
                             status=status.HTTP_403_FORBIDDEN)
-        else:
-            sentEmail = SendSignupCode(email, "customer")
-            if not sentEmail:
-                return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            return Response({'message': 'کد یکبار مصرف ورود به ایمیل شما ارسال شد.', 'status': 'success'},
+
+        time_threshold = timezone.now() - timedelta(seconds=120)
+        recent_code = VerificationCode.objects.filter(
+            email=email, used=False, sendDate__gte=time_threshold, role="customer"
+        )
+
+        if recent_code.exists():
+            return Response({'message': 'کد ورود اخیراً ارسال شده و معتبر است.', 'status': 'success'},
                             status=status.HTTP_200_OK)
+
+        sent = SendSignupCode(email, "customer")
+        if not sent:
+            return Response({'message': 'مشکلی در ارسال کد بوجود آمده است.', 'status': 'error'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': 'کد یکبار مصرف ورود ارسال شد.', 'status': 'success'},
+                        status=status.HTTP_200_OK)
 
 
 class LoginVerifyView(APIView):
@@ -114,15 +134,22 @@ class LoginVerifyView(APIView):
         data = request.data
         email = data.get('email')
         code = data.get('code')
+
         if not all([email, code]):
             return Response({'message': 'اطلاعات ورودی ناقص است.', 'status': 'required'},
                             status=status.HTTP_400_BAD_REQUEST)
+
         time_threshold = timezone.now() - timedelta(seconds=120)
-        codeSent = VerificationCode.objects.filter(email=email, code=code, used=False, sendDate__gte=time_threshold, role="customer")
-        if codeSent.exists():
-            VerificationCode.objects.update_or_create(email=email, code=code, sendDate__gte=time_threshold,role="customer", used=True)
-            return Response({'message': 'ورود موفقیت آمیز.', 'status': 'success'},
-                            status=status.HTTP_200_OK)
-        else:
-            return Response({'message': 'ورود به حساب کاربری با خطا مواجه شد.', 'status': 'error'},
+        code_obj = VerificationCode.objects.filter(
+            email=email, code=code, used=False, sendDate__gte=time_threshold, role="customer"
+        ).first()
+
+        if not code_obj:
+            return Response({'message': 'کد نامعتبر یا منقضی شده است.', 'status': 'error'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        code_obj.used = True
+        code_obj.save()
+
+        return Response({'message': 'ورود موفقیت‌آمیز.', 'status': 'success'},
+                        status=status.HTTP_200_OK)

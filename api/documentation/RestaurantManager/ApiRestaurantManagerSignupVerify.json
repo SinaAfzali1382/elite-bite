@@ -1,0 +1,30 @@
+{
+  "api": "/api/restaurantManager/signup/verify",
+  "method": "post",
+  "input": {
+    "email": "string (email)",
+    "code": "string"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "ثبت‌نام با موفقیت تایید شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "required",
+      "message": "اطلاعات ناقص است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "کد نامعتبر یا منقضی شده.",
+      "statusCode": 400
+    },
+    {
+      "status": "notFound",
+      "message": "کاربر یافت نشد.",
+      "statusCode": 404
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "api": "/api/customer/signup/verify",
+  "method": "post",
+  "input": {
+    "email": "string (email)",
+    "code": "string"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "ثبت‌نام با موفقیت تایید شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "required",
+      "message": "اطلاعات ورودی ناقص است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "کد وارد شده معتبر نیست یا منقضی شده است.",
+      "statusCode": 400
+    }
+  ]
+}

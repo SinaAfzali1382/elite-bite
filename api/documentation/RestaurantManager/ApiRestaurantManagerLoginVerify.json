@@ -1,5 +1,5 @@
 {
-  "api": "/api/customer/signup/verify",
+  "api": "/api/restaurantManager/login/verify",
   "method": "post",
   "input": {
     "email": "string (email)",
@@ -8,17 +8,17 @@
   "output": [
     {
       "status": "success",
-      "message": "ثبت نام شما تائید شد.",
+      "message": "ورود موفقیت‌آمیز بود.",
       "statusCode": 200
     },
     {
       "status": "required",
-      "message": "اطلاعات ورودی ناقص است.",
+      "message": "اطلاعات ناقص است.",
       "statusCode": 400
     },
     {
       "status": "error",
-      "message": "ثبت نام شما تائید نشد.",
+      "message": "کد نامعتبر یا منقضی شده.",
       "statusCode": 400
     }
   ]

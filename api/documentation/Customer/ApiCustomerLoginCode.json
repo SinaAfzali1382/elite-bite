@@ -7,18 +7,28 @@
   "output": [
     {
       "status": "success",
-      "message": "کد یکبار مصرف ورود به ایمیل شما ارسال شد.",
+      "message": "کد یکبار مصرف ورود ارسال شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "success",
+      "message": "کد ورود اخیراً ارسال شده و معتبر است.",
       "statusCode": 200
     },
     {
       "status": "notVerified",
-      "message": "حساب کاربری شما غیرفعال است. لطفا از بخش ثبت نام ایمیل خود را به تائید برسانید.",
+      "message": "حساب کاربری شما غیرفعال است.",
       "statusCode": 403
     },
     {
       "status": "notFound",
       "message": "کاربری با این ایمیل یافت نشد.",
       "statusCode": 404
+    },
+    {
+      "status": "required",
+      "message": "اطلاعات ورودی ناقص است.",
+      "statusCode": 400
     },
     {
       "status": "error",

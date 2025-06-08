@@ -1,0 +1,39 @@
+{
+  "api": "/api/restaurantManager/login/code",
+  "method": "post",
+  "input": {
+    "email": "string (email)"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "کد ورود ارسال شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "success",
+      "message": "کد قبلاً ارسال شده و هنوز معتبر است.",
+      "statusCode": 200
+    },
+    {
+      "status": "required",
+      "message": "ایمیل وارد نشده است.",
+      "statusCode": 400
+    },
+    {
+      "status": "notVerified",
+      "message": "حساب کاربری شما فعال نیست.",
+      "statusCode": 403
+    },
+    {
+      "status": "notFound",
+      "message": "کاربر یافت نشد.",
+      "statusCode": 404
+    },
+    {
+      "status": "error",
+      "message": "ارسال کد با خطا مواجه شد.",
+      "statusCode": 500
+    }
+  ]
+}
