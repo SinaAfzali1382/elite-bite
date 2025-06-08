@@ -1,0 +1,29 @@
+{
+  "api": "/api/customer/login/code",
+  "method": "post",
+  "input": {
+    "email": "string (email)"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "کد یکبار مصرف ورود به ایمیل شما ارسال شد.",
+      "statusCode": 200
+    },
+    {
+      "status": "notVerified",
+      "message": "حساب کاربری شما غیرفعال است. لطفا از بخش ثبت نام ایمیل خود را به تائید برسانید.",
+      "statusCode": 403
+    },
+    {
+      "status": "notFound",
+      "message": "کاربری با این ایمیل یافت نشد.",
+      "statusCode": 404
+    },
+    {
+      "status": "error",
+      "message": "مشکلی در ارسال کد بوجود آمده است.",
+      "statusCode": 400
+    }
+  ]
+}
