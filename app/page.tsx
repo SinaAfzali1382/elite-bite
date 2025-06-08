@@ -1,6 +1,6 @@
-import Header from "@/components/header";
-import FoodSection from "@/components/foodSection";
-import Footer from "@/components/footer";
+import Header from "@/components/mainPage/header";
+import FoodSection from "@/components/mainPage/foodSection";
+import Footer from "@/components/mainPage/footer";
 
 export default function Home() {
   return (
