@@ -39,28 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.idea
-.venv/
 
-
-
-
-
-
-# api ingnores
-
-api/**/__pycache__/
-api/**/*.py[cod]
-
-./api/db.sqlite3
-
-api/**/migrations/*.py
-!api/**/migrations/__init__.py
-
-./api/venv/
-./api/.env
-
-./api/.idea/
-./api/.vscode/
-
-./api/.DS_Store
+/api/.venv
+/api/.idea
+/api/*/__pycache__/*
+/api/*/*/__pycache__/*
+/api/*/migrations/*
+/api/db.sqlite3
