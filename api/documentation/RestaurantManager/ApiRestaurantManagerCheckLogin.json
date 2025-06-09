@@ -1,0 +1,17 @@
+{
+  "api": "/api/restaurantManager/check-login",
+  "method": "get",
+  "input": {},
+  "output": [
+    {
+      "status": "success",
+      "message": "لاگین است.",
+      "statusCode": 200
+    },
+    {
+      "status": "unauthorized",
+      "message": "لاگین نیست.",
+      "statusCode": 401
+    }
+  ]
+}

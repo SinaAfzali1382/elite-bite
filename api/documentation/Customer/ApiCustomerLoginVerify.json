@@ -20,6 +20,11 @@
       "status": "error",
       "message": "کد وارد شده نامعتبر است یا منقضی شده است.",
       "statusCode": 400
+    },
+      {
+      "status": "notFound",
+      "message": "کاربری با این ایمیل پیدا نشد.",
+      "statusCode": 404
     }
   ]
 }

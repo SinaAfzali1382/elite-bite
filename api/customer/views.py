@@ -147,9 +147,16 @@ class LoginVerifyView(APIView):
         if not code_obj:
             return Response({'message': 'کد نامعتبر یا منقضی شده است.', 'status': 'error'},
                             status=status.HTTP_400_BAD_REQUEST)
-
         code_obj.used = True
         code_obj.save()
 
+        customer = Customer.objects.filter(email=email).first()
+        if not customer:
+            return Response({'message': 'کاربری با این ایمیل پیدا نشد.', 'status': 'notFound'},
+                            status=status.HTTP_404_NOT_FOUND)
+        request.session['customer_login'] = {
+            'id': customer.id,
+            'email': customer.email
+        }
         return Response({'message': 'ورود موفقیت‌آمیز.', 'status': 'success'},
                         status=status.HTTP_200_OK)

@@ -5,4 +5,3 @@ class RestaurantManager(models.Model):
     firstName = models.CharField(max_length=20)
     lastName = models.CharField(max_length=25)
     isVerified = models.BooleanField(default=False)
-    restaurantName = models.CharField(max_length=100, blank=True, null=True)

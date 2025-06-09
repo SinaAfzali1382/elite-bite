@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SignupVerifyView, SignupCodeView, LoginCodeView, LoginVerifyView
+from .views import SignupVerifyView, SignupCodeView, LoginCodeView, LoginVerifyView, CheckLoginView
 
 
 
@@ -8,4 +8,6 @@ urlpatterns = [
     path('signup/verify', SignupVerifyView.as_view(), name='restaurantManager-signup-verify'),
     path('login/code', LoginCodeView.as_view(), name='restaurantManager-login-code'),
     path('login/verify', LoginVerifyView.as_view(), name='restaurantManager-login-verify'),
+    path('check/login', CheckLoginView.as_view(), name='restaurantManager-check-login'),
+
 ]

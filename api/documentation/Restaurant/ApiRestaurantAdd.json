@@ -1,0 +1,59 @@
+{
+  "api": "/api/restaurant/add",
+  "method": "post",
+  "inputType": "multipart/form-data",
+  "input": {
+    "name": "string (حداکثر 255 کاراکتر، الزامی)",
+    "description": "string (اختیاری)",
+    "image": "file (jpg/jpeg/png - حداکثر 1MB، الزامی)",
+    "address": "string (الزامی)",
+    "city": "string/integer (آیدی عددی شهر، الزامی)",
+    "areas[]": "array of string (حداقل 1 مورد، الزامی)",
+    "areasPrices[]": "array of number (حداقل 1 مورد، مقادیر غیرمنفی، الزامی)",
+    "phoneNumber": "string (11 رقم، با 09 شروع شود، الزامی)",
+    "contactEmail": "string (ایمیل معتبر، الزامی)",
+    "startWorkHour": "integer/string (بین 0 تا 23، الزامی)",
+    "endWorkHour": "integer/string (بین 0 تا 23، بزرگ‌تر یا مساوی startWorkHour، الزامی)",
+    "deliveryFeeBase": "number (مقدار غیرمنفی، الزامی)",
+    "freeDeliveryThreshold": "number (اختیاری)",
+    "bankAccountNumber": "string (24 رقمی، الزامی)"
+  },
+  "output": [
+    {
+      "status": "success",
+      "message": "رستوران با موفقیت اضافه شد.",
+      "restaurantId": "integer",
+      "statusCode": 201
+    },
+    {
+      "status": "unauthorized",
+      "message": "دسترسی غیرمجاز",
+      "statusCode": 401
+    },
+    {
+      "status": "error",
+      "message": "تصویر ارسال نشده است.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "فرمت تصویر نامعتبر است. فقط jpg، jpeg و png مجاز هستند.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "حجم عکس نباید از یک مگابایت بیشتر باشد.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "شما قبلاً یک رستوران ثبت کرده‌اید.",
+      "statusCode": 400
+    },
+    {
+      "status": "error",
+      "message": "پیام خطای اعتبارسنجی مانند: نام رستوران وارد نشده است.",
+      "statusCode": 400
+    }
+  ]
+}

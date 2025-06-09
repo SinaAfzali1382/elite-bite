@@ -6,6 +6,7 @@ from rest_framework import status
 from .models import RestaurantManager
 from userVerification.models import VerificationCode
 from customer.utilities import SendSignupCode
+from .services import isLoggedInRestaurantManager
 
 
 class SignupCodeView(APIView):
@@ -37,12 +38,10 @@ class SignupCodeView(APIView):
             if not sent:
                 return Response({'message': 'ارسال کد با خطا مواجه شد.', 'status': 'error'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            # به‌روزرسانی اطلاعات کاربر
             not_verified_user.update(firstName=firstName, lastName=lastName)
             return Response({'message': 'کد جدید ارسال شد. اطلاعات شما به‌روز شد.', 'status': 'success'},
                             status=status.HTTP_200_OK)
 
-        # ایجاد کاربر جدید
         manager = RestaurantManager.objects.create(
             firstName=firstName,
             lastName=lastName,
@@ -143,9 +142,27 @@ class LoginVerifyView(APIView):
         if not code_obj:
             return Response({'message': 'کد نامعتبر یا منقضی شده.', 'status': 'error'},
                             status=status.HTTP_400_BAD_REQUEST)
-
         code_obj.used = True
         code_obj.save()
 
+        manager = RestaurantManager.objects.filter(email=email).first()
+        if not manager:
+            return Response({'message': 'کاربر با این ایمیل پیدا نشد.', 'status': 'notFound'},
+                            status=status.HTTP_404_NOT_FOUND)
+        request.session['restaurantManager_login'] = {
+            'id': manager.id,
+            'email': manager.email
+        }
         return Response({'message': 'ورود موفقیت‌آمیز بود.', 'status': 'success'},
                         status=status.HTTP_200_OK)
+
+
+
+class CheckLoginView(APIView):
+    def get(self, request):
+        if isLoggedInRestaurantManager(request):
+            return Response({'message': 'لاگین است.', 'status': 'success'},
+                        status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'لاگین نیست.', 'status': 'unauthorized'},
+                            status=status.HTTP_401_UNAUTHORIZED)

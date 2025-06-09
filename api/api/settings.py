@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'customer',
     'restaurantManager',
-    'restaurants',
+    'restaurant',
     'menu',
     'orders',
     'reviews',
