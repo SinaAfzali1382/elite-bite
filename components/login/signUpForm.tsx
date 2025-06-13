@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import styles from './styles/login.module.css';
+import {useRouter} from "next/navigation";
+import API from "@/components/frontAPI/api";
+import {toast} from "sonner";
 
 interface SignUpFormProps {
     userType: 'customer' | 'restaurant' | null;
@@ -12,7 +15,6 @@ interface SignUpFormProps {
     setFirstName: React.Dispatch<React.SetStateAction<string>>;
     setLastName: React.Dispatch<React.SetStateAction<string>>;
     setEmail: React.Dispatch<React.SetStateAction<string>>;
-    handleSignUp: () => Promise<void>;
     handleReturn: () => void;
 }
 
@@ -25,12 +27,27 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                                                    setFirstName,
                                                    setLastName,
                                                    setEmail,
-                                                   handleSignUp,
                                                    handleReturn,
                                                }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    const handleSignUp = async () => {
+        if (!userType) {
+            return;
+        }
+        try {
+            return await API[
+                userType === 'customer' ? 'customerSignupCode' : 'restaurantSignupCode'
+                ]({firstName, lastName, email});
+        } catch (error) {
+            // Errors are handled in SignUpForm
+            console.log(error);
+            return {status: 'error', message: 'خطا در ارتباط با سرور'};
+        }
+    };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,30 +72,17 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         setSuccessMessage('');
 
         try {
-            await handleSignUp();
-            setSuccessMessage('کد با موفقیت ارسال شد.');
-        } catch (error: unknown) {
-            console.error('Signup error:', error);
-            // Check if error is an HTTP error with response
-            if (
-                error &&
-                typeof error === 'object' &&
-                'response' in error &&
-                error.response &&
-                typeof error.response === 'object' &&
-                'status' in error.response
-            ) {
-                const status = (error.response as { status: number }).status;
-                if (status === 409) {
-                    setErrorMessage('این ایمیل قبلاً ثبت شده است.');
-                } else if (status === 400) {
-                    setErrorMessage('اطلاعات ورودی ناقص است.');
-                } else {
-                    setErrorMessage('خطا در ارتباط با سرور.');
-                }
-            } else {
-                setErrorMessage('خطا در ارتباط با سرور.');
+            const res = await handleSignUp();
+            if (res?.status === 'success') {
+                toast.success(res?.message || "کد تائید با موفقیت به ایمیل شما ارسال شد.");
+                router.push(
+                    `/sms/verify?email=${encodeURIComponent(email)}&type=${encodeURIComponent(userType)}&action=signup`
+                );
+            }else{
+                toast.error(res?.message || "خطا در ارتباط با سرور");
             }
+        } catch {
+        //
         } finally {
             setIsLoading(false);
         }

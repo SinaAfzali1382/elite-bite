@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const BASE_URL = 'http://localhost:8000';
 
 export async function postJson<T extends Record<string, unknown>, R>(
     endpoint: string,

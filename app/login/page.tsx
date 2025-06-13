@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, {useState} from 'react';
 import SignUpForm from '@/components/login/signUpForm';
 import SignInForm from '@/components/login/signInForm';
-import API from '@/components/frontAPI/api';
 import styles from '@/components/login/styles/login.module.css';
 
 const Page: React.FC = () => {
@@ -13,8 +11,6 @@ const Page: React.FC = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
-
-    const router = useRouter();
 
     const handleToggle = () => {
         setIsSignUp(!isSignUp);
@@ -29,26 +25,6 @@ const Page: React.FC = () => {
         setFirstName('');
         setLastName('');
         setEmail('');
-    };
-
-    const handleSignUp = async () => {
-        if (!userType) {
-            return;
-        }
-
-        try {
-            const res = await API[
-                userType === 'customer' ? 'customerSignupCode' : 'restaurantSignupCode'
-                ]({ firstName, lastName, email });
-
-            if (res.status === 'success') {
-                router.push(
-                    `/sms/verify?email=${encodeURIComponent(email)}&type=${encodeURIComponent(userType)}&action=signup`
-                );
-            }
-        } catch {
-            // Errors are handled in SignUpForm
-        }
     };
 
     React.useEffect(() => {
@@ -74,7 +50,6 @@ const Page: React.FC = () => {
                                 setFirstName={setFirstName}
                                 setLastName={setLastName}
                                 setEmail={setEmail}
-                                handleSignUp={handleSignUp}
                                 handleReturn={handleReturn}
                             />
                         ) : (
